@@ -1,0 +1,7 @@
+{application, rabbit_udp_exchange,
+ [{description, "RabbitMQ UDP Exchange Plugin"},
+  {vsn, "%%VSN%%"},
+  {modules, [udp_exchange_app, udp_exchange]},
+  {registered, []},
+  {mod, {udp_exchange_app, []}},
+  {applications, [kernel, stdlib, rabbit, mnesia]}]}.
