@@ -77,9 +77,13 @@ endpoint_params(#exchange{name = XName, arguments = Args}) ->
                                               "'port' argument to ~p must be nonsero",
                                               XName);
                {_, N} when is_integer(N) -> N;
-               _ ->
+               undefined ->
                    rabbit_misc:protocol_error(precondition_failed,
                                               "Missing 'port' argument to ~p exchange",
+                                              XName);
+               _ ->
+                   rabbit_misc:protocol_error(precondition_failed,
+                                              "Invalid 'port' argument to ~p exchange (wrong type)",
                                               XName)
            end,
     {IpAddr, Port, process_name_for(IpStr, Port)}.
