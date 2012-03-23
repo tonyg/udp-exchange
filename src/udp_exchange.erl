@@ -145,7 +145,7 @@ truncate_bin(Limit, B) ->
 udp_delivery(XName, {A, B, C, D}, Port, Body) ->
     IpStr = list_to_binary(io_lib:format("~p.~p.~p.~p", [A, B, C, D])),
     Headers = [{<<"source_ip">>, longstr, IpStr},
-               {<<"source_port">>, short, Port}],
+               {<<"source_port">>, signedint, Port}],
     RoutingKey = truncate_bin(255, list_to_binary(["ipv4",
                                                    ".", IpStr,
                                                    ".", integer_to_list(Port),
