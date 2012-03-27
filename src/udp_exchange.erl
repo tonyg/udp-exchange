@@ -61,30 +61,30 @@ endpoint_params(#exchange{name = XName, arguments = Args}) ->
                 undefined -> "0.0.0.0";
                 _ ->
                     rabbit_misc:protocol_error(precondition_failed,
-                                               "Invalid 'ip' argument to ~p exchange (wrong type)",
-                                               XName)
+                                               "Invalid 'ip' argument to ~s (wrong type)",
+                                               [rabbit_misc:rs(XName)])
             end,
     IpAddr = case inet_parse:address(IpStr) of
                  {ok, A} -> A;
                  _ ->
                      rabbit_misc:protocol_error(precondition_failed,
-                                                "Invalid 'ip' argument to ~p exchange (ill-formed)",
-                                                XName)
+                                                "Invalid 'ip' argument to ~s (ill-formed)",
+                                                [rabbit_misc:rs(XName)])
              end,
     Port = case rabbit_misc:table_lookup(Args, <<"port">>) of
                {_, 0} ->
                    rabbit_misc:protocol_error(precondition_failed,
-                                              "'port' argument to ~p must be nonsero",
-                                              XName);
+                                              "'port' argument to ~s must be nonsero",
+                                              [rabbit_misc:rs(XName)]);
                {_, N} when is_integer(N) -> N;
                undefined ->
                    rabbit_misc:protocol_error(precondition_failed,
-                                              "Missing 'port' argument to ~p exchange",
-                                              XName);
+                                              "Missing 'port' argument to ~s",
+                                              [rabbit_misc:rs(XName)]);
                _ ->
                    rabbit_misc:protocol_error(precondition_failed,
-                                              "Invalid 'port' argument to ~p exchange (wrong type)",
-                                              XName)
+                                              "Invalid 'port' argument to ~s (wrong type)",
+                                              [rabbit_misc:rs(XName)])
            end,
     {IpAddr, Port, process_name_for(IpStr, Port)}.
 
