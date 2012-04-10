@@ -13,10 +13,11 @@ them on to a specified IP address and UDP port.
 Call your `exchange_declare` command with the following arguments in
 the `arguments` table:
 
-    Key   Type    Optional? Description
-    -----------------------------------------------------------------------
-    port  short   no        Port number to listen for incoming packets on
-    ip    string  yes       IP address to listen on; default is 0.0.0.0
+    Key    Type    Optional? Description
+    ------------------------------------------------------------------------
+    port   short   no        Port number to listen for incoming packets on
+    ip     string  yes       IP address to listen on; default is 0.0.0.0
+    format string  yes       Module to use for packet parsing and formatting; default "raw"
 
 The `ip` string, if supplied, must be a numeric IPv4 address string of
 the form `X.Y.Z.W`. If `ip` is missing, the exchange will listen at
@@ -27,11 +28,19 @@ the specified port on all interfaces.
 Deleting an `x-udp` exchange causes the system to stop listening for
 UDP packets on the exchange's configured port.
 
-## Messages arriving from UDP
+## Packet formats
+
+The `format` string in the `arguments` table of `exchange_declare`
+controls the packet parsing and formatting process. There are two
+possible values for the string at present, `raw` and `stomp`.
+
+If the `format` string is omitted, `raw` is assumed.
+
+### Raw packet format, `format = "raw"`
 
 Messages arriving on the UDP socket associated with an `x-udp`
-exchange are translated into AMQP messages and routed to bound
-queues. The `routing_key`s of the AMQP messages are of the form
+exchange in `raw` mode are translated into AMQP messages and routed to
+bound queues. The `routing_key`s of the AMQP messages are of the form
 
     ipv4.X.Y.Z.W.Port.Prefix
 
@@ -45,6 +54,44 @@ fit. The remainder is discarded from the `routing_key`.
 The body of each produced AMQP message is the entire body of the
 received UDP packet.
 
+### STOMP packet format, `format = "stomp"`
+
+Messages arriving on the UDP socket associated with an `x-udp`
+exchange in `stomp` mode are parsed as if they were complete
+[STOMP](http://stomp.github.com/stomp-specification-1.1.html) protocol
+frames. The `routing_key`s of the resulting AMQP messages are of the
+form
+
+    ipv4.X.Y.Z.W.Port.Command.Destination
+
+where `X.Y.Z.W` is the numeric IPv4 address string that the UDP packet
+was sent from, `Port` is the UDP port number that the packet was sent
+from, `Command` is the command name from the STOMP frame, and
+`Destination` is the contents of a distinguished routing-key header
+field from the STOMP frame.
+
+If the exchange was declared with a string-valued argument table entry
+named `routing_key_header`, then the value of that table entry is used
+as the STOMP header name to scan incoming frames for in calculating
+the AMQP routing key to use when delivering them on to bound
+queues. If the value of `routing_key_header` is the empty string, then
+none of the headers on an incoming STOMP frame are treated as the
+routing key; the `Destination` portion of the AMQP routing key is
+simply left empty, and the complete collection of STOMP headers is
+passed on to AMQP receivers as usual. If `routing_key_header` is not
+specified, then the STOMP `destination` header is used.
+
+    Value for routing_key_header   STOMP header used to extract routing key
+    -----------------------------------------------------------------------
+    missing                        "destination"
+    ""                             none
+    "example"                      "example"
+
+No matter the choice of `routing_key_header`, *all* the headers from
+the received STOMP frame are passed on as user headers in the AMQP
+message, and the body of each produced AMQP message is the entire body
+of the received STOMP frame.
+
 ## Bindings from `x-udp` exchanges to AMQP queues
 
 The `routing_key` of messages routed to queues is formatted as
@@ -54,17 +101,21 @@ for selecting UDP messages to receive. All the normal topic
 
 For example, to receive all packets *sent* from port 1234, you would
 bind your queue using a `routing_key` pattern of
-`ipv4.*.*.*.*.1234.#`. To simply receive all incoming UDP packets, you
+`ipv4.*.*.*.*.1234.#`. To simply receive all incoming packets, you
 would bind using a pattern of `#`.
 
-Since the first few bytes of each packet are placed in the
-`routing_key` field, you can route based on packet prefix (so long as
-your data format uses `"."` in a compatible way).
+When using the `raw` format, since the first few bytes of each packet
+are placed in the `routing_key` field, you can route based on packet
+prefix (so long as your data format uses `"."` in a compatible
+way). When using the `stomp` format, the `routing_key` field is
+computed based on the `routing_key_header` described above.
 
-## Messages to be sent to UDP
+## Routing messages from AMQP outbound via UDP
 
-Messages published to an `x-udp` exchange must have routing keys of
-the form
+## Raw UDP packets - `format = "raw"`
+
+Messages published to a `raw`-mode `x-udp` exchange must have routing
+keys of the form
 
     ipv4.X.Y.Z.W.Port
 
@@ -74,6 +125,26 @@ period-separated routing key segments following the `Port` segment of
 the key, they are ignored. The packet's body will be the body of the
 published AMQP message. The packet will be sent from the IP address
 and port number that the exchange itself was declared with.
+
+## STOMP UDP packets - `format = "stomp"`
+
+Messages published to a `stomp`-mode `x-udp` exchange must have routing
+keys of the form
+
+    ipv4.X.Y.Z.W.Port.Command.Destination
+
+as described above for `raw`-mode, except the `Command`, which is used
+as the command portion of the STOMP frame to be sent, and the
+`Destination`, which is optional, and used as the value for the
+`routing_key_header`, if any.
+
+The AMQP user headers are converted into STOMP headers. A STOMP
+`content-length` header is added before sending. The body of the STOMP
+frame UDP packet is just the body of the published AMQP message. The
+packet will be sent from the IP address and port number that the
+exchange itself was declared with.
+
+## Limitations
 
 Note that there may be platform and network-specific limitations on
 the sizes of UDP packets that can be sent and received.
