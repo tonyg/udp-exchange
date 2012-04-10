@@ -1,0 +1,1 @@
+-record(params, {exchange_def, ip_addr, port, process_name, packet_module, packet_config}).
