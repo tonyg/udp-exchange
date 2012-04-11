@@ -31,8 +31,8 @@ UDP packets on the exchange's configured port.
 ## Packet formats
 
 The `format` string in the `arguments` table of `exchange_declare`
-controls the packet parsing and formatting process. There are two
-possible values for the string at present, `raw` and `stomp`.
+controls the packet parsing and formatting process. The possible
+values for the string are documented below.
 
 If the `format` string is omitted, `raw` is assumed.
 
@@ -91,6 +91,26 @@ No matter the choice of `routing_key_header`, *all* the headers from
 the received STOMP frame are passed on as user headers in the AMQP
 message, and the body of each produced AMQP message is the entire body
 of the received STOMP frame.
+
+### Syslog packet format, `format = "syslog"`
+
+(Contributed by Lionel Cons.)
+
+Messages arriving on the UDP socket associated with an `x-udp`
+exchange in `syslog` mode are parsed as if they were in [BSD syslog
+Protocol format (RFC 3164)](http://www.ietf.org/rfc/rfc3164.txt). The
+`routing_key`s of the resulting AMQP messages are of the form
+
+    ipv4.X.Y.Z.W.Port.Facility.Severity
+
+where `X.Y.Z.W` and `Port` are as specified above, and `Facility` and
+`Severity` are respectively the numerical facility and severity of the
+syslog packet. The latter two also appear in the user headers of the
+messages.
+
+Note that at this time, outbound delivery of syslog-formatted packets
+is not implemented: `syslog`-format UDP exchanges will be able to
+receive syslog packets only.
 
 ## Bindings from `x-udp` exchanges to AMQP queues
 
