@@ -108,10 +108,6 @@ where `X.Y.Z.W` and `Port` are as specified above, and `Facility` and
 syslog packet. The latter two also appear in the user headers of the
 messages.
 
-Note that at this time, outbound delivery of syslog-formatted packets
-is not implemented: `syslog`-format UDP exchanges will be able to
-receive syslog packets only.
-
 ## Bindings from `x-udp` exchanges to AMQP queues
 
 The `routing_key` of messages routed to queues is formatted as
@@ -132,7 +128,7 @@ computed based on the `routing_key_header` described above.
 
 ## Routing messages from AMQP outbound via UDP
 
-## Raw UDP packets - `format = "raw"`
+### Raw UDP packets - `format = "raw"`
 
 Messages published to a `raw`-mode `x-udp` exchange must have routing
 keys of the form
@@ -146,7 +142,7 @@ the key, they are ignored. The packet's body will be the body of the
 published AMQP message. The packet will be sent from the IP address
 and port number that the exchange itself was declared with.
 
-## STOMP UDP packets - `format = "stomp"`
+### STOMP UDP packets - `format = "stomp"`
 
 Messages published to a `stomp`-mode `x-udp` exchange must have routing
 keys of the form
@@ -163,6 +159,12 @@ The AMQP user headers are converted into STOMP headers. A STOMP
 frame UDP packet is just the body of the published AMQP message. The
 packet will be sent from the IP address and port number that the
 exchange itself was declared with.
+
+### Syslog UDP packets - `format = "syslog"`
+
+Outbound delivery of syslog-formatted packets is not yet implemented:
+`syslog`-format UDP exchanges will only be able to receive syslog
+packets.
 
 ## Limitations
 
