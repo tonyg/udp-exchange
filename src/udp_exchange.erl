@@ -84,6 +84,13 @@ endpoint_params(X = #exchange{name = XName, arguments = Args}) ->
                        N < 0 -> N + 65536; %% stupid signed short encoding in AMQP!
                        true -> N
                    end;
+               {longstr, PortStr} ->
+                   %% Gross. We support this because the RabbitMQ
+                   %% management console doesn't yet permit selection
+                   %% of argument types other than strings. This
+                   %% should be removed as soon as possible. (Also,
+                   %% we're not catching possible badargs.)
+                   list_to_integer(binary_to_list(PortStr));
                undefined ->
                    rabbit_misc:protocol_error(precondition_failed,
                                               "Missing 'port' argument to ~s",
