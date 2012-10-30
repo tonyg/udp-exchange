@@ -198,7 +198,7 @@ udp_delivery(IpAddr = {A, B, C, D},
                                                            ".", IpStr,
                                                            ".", integer_to_list(Port),
                                                            ".", RoutingKeySuffix])),
-            {ok, rabbit_basic:delivery(false, false,
+            {ok, rabbit_basic:delivery(false,
                                        rabbit_basic:message(XName, RoutingKey, Properties, Body),
                                        undefined)};
         ignore ->
