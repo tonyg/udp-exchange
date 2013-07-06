@@ -8,6 +8,16 @@ incoming messages, and relays them on to the queues bound to the
 exchange. It also takes messages published to the exchange and relays
 them on to a specified IP address and UDP port.
 
+## Prebuilt Binary Downloads
+
+From time to time, I make a snapshot binary download of the plugin
+available: see
+<http://eighty-twenty.org/tech/rabbitmq/binary-plugins.html>. Expect
+plugins to have a GPG signature from `tonygarnockjones@gmail.com`, key
+available
+[here](http://homepages.kcbbs.gen.nz/tonyg/gpg-key-gmail.txt),
+fingerprint `630A 8781 4B1F A5BA C30F  A95D 6141 87C4 CEB5 3E0C`.
+
 ## Declaring an `x-udp` exchange
 
 Call your `exchange_declare` command with the following arguments in
