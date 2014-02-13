@@ -8,21 +8,41 @@
 -include("udp_exchange.hrl").
 
 -rabbit_boot_step({udp_supervisor,
-                   [{description, "udp"},
+                   [{description, "UDP supervisor"},
                     {mfa,         {rabbit_sup, start_child, [?MODULE]}},
                     {requires,    kernel_ready},
                     {enables,     udp_exchange}]}).
 
+-rabbit_boot_step({udp_recovery,
+                   [{description, "UDP recovery"},
+                    {mfa,         {?MODULE, recover, []}},
+                    {requires,    recovery},
+                    {enables,     routing_ready}]}).
 
 -behaviour(supervisor).
--export([start_link/0, ensure_started/1, stop/1, endpoint_params/1]).
+
+-export([start_link/0, recover/0, ensure_started/1, stop/1, endpoint_params/1]).
+
+-export([ensure_started_local/1, stop_local/1]).
 
 -export([init/1]).
 
 start_link() ->
     supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
-ensure_started(X) ->
+recover() ->
+    [ensure_started_local(X) || V <- rabbit_vhost:list(),
+                                X = #exchange{type = 'x-udp'}
+                                    <- rabbit_exchange:list(V)],
+    ok.
+
+ensure_started(X) -> multicall(ensure_started_local, X).
+stop(X)           -> multicall(stop_local,           X).
+
+multicall(F, X) ->
+    rpc:multicall(rabbit_mnesia:cluster_nodes(running), ?MODULE, F, [X]).
+
+ensure_started_local(X) ->
     #params{process_name = ProcessName} = Params = endpoint_params(X),
     case whereis(ProcessName) of
         undefined ->
@@ -37,7 +57,7 @@ ensure_started(X) ->
             Pid
     end.
 
-stop(X) ->
+stop_local(X) ->
     #params{process_name = ProcessName} = endpoint_params(X),
     ok = supervisor:terminate_child(?MODULE, ProcessName),
     ok = supervisor:delete_child(?MODULE, ProcessName).

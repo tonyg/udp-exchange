@@ -34,7 +34,7 @@ serialise_events() -> false.
 
 %% Called when AMQP clients basic.publish to this exchange.
 route(X, Delivery) ->
-    udp_exchange_sup:ensure_started(X) ! Delivery,
+    udp_exchange_sup:ensure_started_local(X) ! Delivery,
     [].
 
 %% Called every time this exchange is declared, not just the first.
