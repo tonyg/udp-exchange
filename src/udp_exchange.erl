@@ -46,17 +46,17 @@ validate(X) ->
 validate_binding(_X, _B) -> ok.
 
 %% Called just the first time the exchange is declared.
-create(transaction, X) ->
-    udp_exchange_sup:ensure_started(X),
+create(transaction, _X) ->
     ok;
-create(none, _X) ->
+create(none, X) ->
+    udp_exchange_sup:ensure_started(X),
     ok.
 
 %% Called when we're finally deleted.
-delete(transaction, X, _Bs) ->
-    udp_exchange_sup:stop(X),
+delete(transaction, _X, _Bs) ->
     ok;
-delete(none, _X, _Bs) ->
+delete(none, X, _Bs) ->
+    udp_exchange_sup:stop(X),
     ok.
 
 policy_changed(_X1, _X2) -> ok.
