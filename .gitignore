@@ -2,6 +2,8 @@ ebin
 build
 dist
 *.beam
+*~
 test/tests/.idea/
 test/tests/*.iml
 test/tests/out/
+test/tests/class/
