@@ -44,7 +44,7 @@ handle_info(Delivery = #delivery{}, State = #state{params = Params,
             ok;
         {'EXIT', Reason} ->
             %% Discard messages we can't shoehorn into UDP.
-            RKs = Delivery#delivery.message#basic_message.routing_keys,
+            RKs = (Delivery#delivery.message)#basic_message.routing_keys,
             #params{exchange_def = #exchange{name = XName},
                     packet_module = PacketModule} = Params,
             error_logger:warning_report({?MODULE, PacketModule, format,
