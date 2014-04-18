@@ -71,7 +71,7 @@ assert_args_equivalence(X, Args) -> rabbit_exchange:assert_args_equivalence(X, A
 deliver(X, Delivery) ->
     QueueNames = rabbit_exchange_type_topic:route(X, Delivery),
     Queues = rabbit_amqqueue:lookup(QueueNames),
-    {routed, _} = rabbit_amqqueue:deliver(Queues, Delivery),
+    _QueuePids = rabbit_amqqueue:deliver(Queues, Delivery),
     ok.
 
 truncate_bin(Limit, B) ->
