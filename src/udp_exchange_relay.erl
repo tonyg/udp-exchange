@@ -86,7 +86,9 @@ analyze_delivery(Delivery =
                  #params{packet_module = PacketModule,
                          packet_config = PacketConfig}) ->
     <<"ipv4.", Rest/binary>> = RoutingKey,
-    [AStr, BStr, CStr, DStr, PortStr | RoutingKeySuffixes] = binary:split(Rest, <<".">>, [global]),
+    %% re:split(X,Y) can be replaced with binary:split(X,Y,[global]) once we
+    %% drop support for Erlangs older than R14.
+    [AStr, BStr, CStr, DStr, PortStr | RoutingKeySuffixes] = re:split(Rest, "\\."),
     A = list_to_integer(binary_to_list(AStr)),
     B = list_to_integer(binary_to_list(BStr)),
     C = list_to_integer(binary_to_list(CStr)),
