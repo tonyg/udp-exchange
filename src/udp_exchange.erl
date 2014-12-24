@@ -14,6 +14,8 @@
                    [{description, "exchange type x-udp"},
 		    {mfa,         {rabbit_registry, register,
 				   [exchange, ?EXCHANGE_TYPE_BIN, ?MODULE]}},
+		    {cleanup,     {rabbit_registry, unregister,
+				   [exchange, ?EXCHANGE_TYPE_BIN]}},
                     {requires,    rabbit_registry},
                     {enables,     recovery}]}).
 
